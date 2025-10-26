@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IL Rules of the Road: Chapter 1 Quiz</title>
+    <!-- Load Tailwind CSS from CDN for utility-first styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* --- CUSTOM CSS FOR AESTHETICS --- */
+        body {
+            /* Set a preferred font and background color */
+            font-family: 'Inter', sans-serif;
+            background-color: #e5e7eb; /* Light gray background */
+        }
+        .card {
+            /* Apply a subtle shadow for depth */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .answer-btn {
+            /* Smooth transition for hover effects */
+            transition: all 0.2s;
+        }
+        /* Styles applied dynamically by JavaScript upon answering */
+        .correct {
+            background-color: #10b981 !important; /* Emerald green for correct answer */
+            color: white !important;
+            border-color: #059669 !important;
+        }
+        .incorrect {
+            background-color: #ef4444 !important; /* Red for incorrect selection */
+            color: white !important;
+            border-color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main application container. Centered on the screen. -->
+    <div id="quiz-app" class="w-full max-w-2xl bg-white rounded-xl card p-6 md:p-10">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-4 text-center">
+            IL Rules of the Road: Chapter 1 Quiz
+        </h1>
+        <p class="text-center text-sm text-gray-500 mb-8">Test your knowledge on permits, GDL, and licensing requirements.</p>
+
+        <!-- Container where questions and answer buttons are dynamically loaded -->
+        <div id="question-container">
+            <!-- JavaScript renders question title and buttons here -->
+        </div>
+
+        <!-- Container for feedback/rationale, hidden until an answer is submitted -->
+        <div id="rationale-container" class="mt-6 p-4 rounded-lg hidden border-l-4">
+            <p id="rationale-text" class="text-sm"></p>
+        </div>
+
+        <!-- Quiz Control Button -->
+        <div class="mt-8 flex justify-end">
+            <button id="next-btn" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-150 disabled:opacity-50" disabled>
+                Next Question
+            </button>
+        </div>
+
+        <!-- Final results screen, hidden until the quiz is complete -->
+        <div id="results-container" class="hidden text-center">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
+            <p id="final-score" class="text-2xl font-semibold mb-6"></p>
+            <!-- Restart button uses the initializeQuiz function to reset state -->
+            <button id="restart-btn" onclick="initializeQuiz()" class="px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150">
+                Restart Quiz
+            </button>
+        </div>
+    </div>
+
+    <!-- --- JAVASCRIPT LOGIC --- -->
+    <script>
+        // --- QUIZ DATA (20 QUESTIONS) ---
+        // Array of question objects. Each object contains the question text, a list of
+        // answer options (one of which is marked as correct), and a rationale.
+        const quizData = [
+            // Question 1
+            {
+                "questionNumber": 1,
+                "question": "What is the minimum age requirement to obtain an Instruction Permit in the state of Illinois?",
+                "answerOptions": [
+                    { "text": "14 years old", "isCorrect": false },
+                    { "text": "15 years old", "isCorrect": true },
+                    { "text": "16 years old", "isCorrect": false },
+                    { "text": "17 years old", "isCorrect": false }
+                ],
+                "rationale": "Illinois state law permits a person to apply for an Instruction Permit at 15, provided they meet all other requirements."
+            },
+            // Question 2
+            {
+                "questionNumber": 2,
+                "question": "A person holding an Instruction Permit (Permit Phase of GDL) must be accompanied by a licensed driver who is at least what age?",
+                "answerOptions": [
+                    { "text": "18 years old", "isCorrect": false },
+                    { "text": "21 years old", "isCorrect": true },
+                    { "text": "25 years old", "isCorrect": false },
+                    { "text": "16 years old", "isCorrect": false }
+                ],
+                "rationale": "The licensed driver accompanying a permit holder must be 21 or older and have held a license for at least one year."
+            },
+            // ... (Remaining questions follow the same structure)
+            {
+                "questionNumber": 3,
+                "question": "During the Initial Licensing Phase (ages 16-17), for the first 12 months, how many unrelated passengers under the age of 19 are permitted in the vehicle?",
+                "answerOptions": [
+                    { "text": "Unlimited passengers", "isCorrect": false },
+                    { "text": "Two passengers", "isCorrect": false },
+                    { "text": "One passenger", "isCorrect": true },
+                    { "text": "Three passengers", "isCorrect": false }
+                ],
+                "rationale": "During the first 12 months, only one unrelated passenger under 19 is allowed in the vehicle, unless traveling to or from work or an organized event."
+            },
+            {
+                "questionNumber": 4,
+                "question": "What is the primary document that proves ownership of a vehicle?",
+                "answerOptions": [
+                    { "text": "Vehicle Registration Card", "isCorrect": false },
+                    { "text": "Insurance Card", "isCorrect": false },
+                    { "text": "Certificate of Title", "isCorrect": true },
+                    { "text": "Driver's License", "isCorrect": false }
+                ],
+                "rationale": "The **Certificate of Title** is the legal document issued by the Secretary of State that proves legal ownership of the vehicle."
+            },
+            {
+                "questionNumber": 5,
+                "question": "Which of the following tests is *not* required to obtain an Illinois driver's license?",
+                "answerOptions": [
+                    { "text": "Vision Test", "isCorrect": false },
+                    { "text": "Written Exam", "isCorrect": false },
+                    { "text": "Road Test (Driving Exam)", "isCorrect": false },
+                    { "text": "Hearing Test", "isCorrect": true }
+                ],
+                "rationale": "A specific **Hearing Test** is generally not required for a non-CDL driver's license."
+            },
+            {
+                "questionNumber": 6,
+                "question": "Under the GDL Initial Licensing Phase, what are the driving curfew hours on Friday and Saturday nights?",
+                "answerOptions": [
+                    { "text": "11 p.m. to 6 a.m.", "isCorrect": true },
+                    { "text": "10 p.m. to 5 a.m.", "isCorrect": false },
+                    { "text": "Midnight to 4 a.m.", "isCorrect": false },
+                    { "text": "9 p.m. to 6 a.m.", "isCorrect": false }
+                ],
+                "rationale": "On weekend nights, the curfew is **11 p.m. to 6 a.m.**"
+            },
+            {
+                "questionNumber": 7,
+                "question": "What is the consequence for a first conviction of a serious GDL violation (e.g., street racing or illegal consumption of alcohol)?",
+                "answerOptions": [
+                    { "text": "A written warning only", "isCorrect": false },
+                    { "text": "A fine up to $\\$500$", "isCorrect": false },
+                    { "text": "Suspension or revocation of driving privileges", "isCorrect": true },
+                    { "text": "Mandatory enrollment in a driver safety course", "isCorrect": false }
+                ],
+                "rationale": "Serious offenses result in a mandatory **suspension or revocation** of the license, as these are zero-tolerance violations."
+            },
+            {
+                "questionNumber": 8,
+                "question": "A newly licensed driver (age 16) who receives an Initial Licensing Phase violation will have their 9-month waiting period for the Full License Phase extended by what duration?",
+                "answerOptions": [
+                    { "text": "3 months", "isCorrect": false },
+                    { "text": "6 months", "isCorrect": true },
+                    { "text": "12 months", "isCorrect": false },
+                    { "text": "No extension, only a fine", "isCorrect": false }
+                ],
+                "rationale": "The 9-month waiting period is extended by **6 months** for any moving violation conviction during the Initial Licensing Phase."
+            },
+            {
+                "questionNumber": 9,
+                "question": "For a person over the age of 18 applying for their first driver's license, which GDL phase are they NOT subject to?",
+                "answerOptions": [
+                    { "text": "The Instruction Permit Phase", "isCorrect": false },
+                    { "text": "The Initial Licensing Phase", "isCorrect": true },
+                    { "text": "The Full Licensing Phase", "isCorrect": false },
+                    { "text": "The Supervised Driving Phase", "isCorrect": false }
+                ],
+                "rationale": "The **Initial Licensing Phase** (with passenger and curfew restrictions) only applies to drivers aged 16 and 17."
+            },
+            {
+                "questionNumber": 10,
+                "question": "Which of the following is an acceptable document to prove residency when applying for an Illinois driver's license?",
+                "answerOptions": [
+                    { "text": "A library card", "isCorrect": false },
+                    { "text": "A notarized letter from a friend", "isCorrect": false },
+                    { "text": "A bank statement dated within the last 90 days", "isCorrect": true },
+                    { "text": "A student ID card", "isCorrect": false }
+                ],
+                "rationale": "A valid **bank statement dated within the last 90 days** is one of the acceptable official documents for residency proof."
+            },
+            {
+                "questionNumber": 11,
+                "question": "How many hours of supervised driving, including at least 10 hours at night, are required for a 15-year-old permit holder to qualify for the Initial Licensing Phase?",
+                "answerOptions": [
+                    { "text": "25 hours", "isCorrect": false },
+                    { "text": "30 hours", "isCorrect": false },
+                    { "text": "40 hours", "isCorrect": false },
+                    { "text": "50 hours", "isCorrect": true }
+                ],
+                "rationale": "The state requires a minimum of **50 hours** of supervised driving, with at least 10 of those hours being driven at night."
+            },
+            {
+                "questionNumber": 12,
+                "question": "How many days does an Illinois driver have to notify the Secretary of State's office of a change of address?",
+                "answerOptions": [
+                    { "text": "7 days", "isCorrect": false },
+                    { "text": "10 days", "isCorrect": true },
+                    { "text": "30 days", "isCorrect": false },
+                    { "text": "90 days", "isCorrect": false }
+                ],
+                "rationale": "Illinois law requires the driver to notify the Secretary of State's office of an address change within **10 days**."
+            },
+            {
+                "questionNumber": 13,
+                "question": "What is the most common classification of a non-commercial driver's license that allows the holder to operate cars and light trucks?",
+                "answerOptions": [
+                    { "text": "Class A", "isCorrect": false },
+                    { "text": "Class B", "isCorrect": false },
+                    { "text": "Class D", "isCorrect": true },
+                    { "text": "Class L", "isCorrect": false }
+                ],
+                "rationale": "**Class D** is the standard driver's license classification for operating passenger cars, vans, and light trucks up to 16,000 lbs."
+            },
+            {
+                "questionNumber": 14,
+                "question": "Although a 16 or 17-year-old can indicate their wish to be an organ donor, what is the minimum age to give legal consent to be an organ and tissue donor in Illinois?",
+                "answerOptions": [
+                    { "text": "15 years old", "isCorrect": false },
+                    { "text": "16 years old", "isCorrect": false },
+                    { "text": "18 years old", "isCorrect": true },
+                    { "text": "21 years old", "isCorrect": false }
+                ],
+                "rationale": "Age **18** is the age of legal majority in Illinois, at which point an individual can legally consent to organ and tissue donation."
+            },
+            {
+                "questionNumber": 15,
+                "question": "For an Illinois resident between the ages of 21 and 80, what is the typical validity period before they must renew their standard driver's license?",
+                "answerOptions": [
+                    { "text": "Every year", "isCorrect": false },
+                    { "text": "Every two years", "isCorrect": false },
+                    { "text": "Every four years", "isCorrect": true },
+                    { "text": "Every six years", "isCorrect": false }
+                ],
+                "rationale": "The standard renewal cycle for most adult drivers in this age range is every **four years**."
+            },
+            {
+                "questionNumber": 16,
+                "question": "When must a driver report a medical condition that could impair driving ability to the Secretary of State?",
+                "answerOptions": [
+                    { "text": "Only when the condition causes a crash", "isCorrect": false },
+                    { "text": "Only when applying for renewal", "isCorrect": false },
+                    { "text": "Immediately upon diagnosis", "isCorrect": false },
+                    { "text": "When the condition interferes with safe driving", "isCorrect": true }
+                ],
+                "rationale": "The law requires reporting when a condition could reasonably interfere with the **safe operation of a motor vehicle**."
+            },
+            {
+                "questionNumber": 17,
+                "question": "A 15-year-old applying for an Instruction Permit must be currently enrolled in or have successfully completed what course?",
+                "answerOptions": [
+                    { "text": "First Aid Certification", "isCorrect": false },
+                    { "text": "High School Diploma", "isCorrect": false },
+                    { "text": "Driver Education Course", "isCorrect": true },
+                    { "text": "Defensive Driving Course", "isCorrect": false }
+                ],
+                "rationale": "State law requires a 15-year-old applicant to be enrolled in or have completed a state-approved **Driver Education Course**."
+            },
+            {
+                "questionNumber": 18,
+                "question": "Which of the following documents is MANDATORY to present to the Secretary of State's facility before a vehicle may be driven, regardless of the license application process?",
+                "answerOptions": [
+                    { "text": "Social Security Card", "isCorrect": false },
+                    { "text": "Proof of Liability Insurance", "isCorrect": true },
+                    { "text": "Copy of Birth Certificate", "isCorrect": false },
+                    { "text": "High School Transcript", "isCorrect": false }
+                ],
+                "rationale": "Current **Proof of Liability Insurance** is mandatory for the operation of any vehicle on Illinois roadways and must be presented for the road test."
+            },
+            {
+                "questionNumber": 19,
+                "question": "If a permit holder (regardless of age) fails the driving exam, how long must they wait before attempting the road test again?",
+                "answerOptions": [
+                    { "text": "24 hours", "isCorrect": false },
+                    { "text": "3 days", "isCorrect": false },
+                    { "text": "7 days", "isCorrect": true },
+                    { "text": "14 days", "isCorrect": false }
+                ],
+                "rationale": "The minimum required waiting period after failing the driving portion of the license exam is **7 days**."
+            },
+            {
+                "questionNumber": 20,
+                "question": "What are the nighttime curfew hours for a driver in the Initial Licensing Phase (under 18) from Sunday through Thursday?",
+                "answerOptions": [
+                    { "text": "10 p.m. to 6 a.m.", "isCorrect": true },
+                    { "text": "10 p.m. to 5 a.m.", "isCorrect": false },
+                    { "text": "11 p.m. to 6 a.m.", "isCorrect": false },
+                    { "text": "Midnight to 5 a.m.", "isCorrect": false }
+                ],
+                "rationale": "The nighttime curfew on non-weekend nights (Sunday through Thursday) runs from **10 p.m. to 6 a.m.**"
+            }
+        ];
+
+        // --- GLOBAL STATE VARIABLES ---
+        let currentQuestionIndex = 0; // Tracks which question the user is currently on (0-indexed)
+        let score = 0;                 // Tracks the number of correct answers
+        let answered = false;          // Flag to prevent the user from clicking multiple answers
+        let shuffledAnswers = [];      // Stores the randomized order of answers for the currently displayed question
+
+        // --- DOM ELEMENT REFERENCES ---
+        const questionContainer = document.getElementById('question-container');
+        const rationaleContainer = document.getElementById('rationale-container');
+        const rationaleText = document.getElementById('rationale-text');
+        const nextBtn = document.getElementById('next-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const finalScore = document.getElementById('final-score');
+
+        /**
+         * Shuffles an array using the modern Fisher-Yates (Knuth) shuffle algorithm.
+         * Ensures that the order of answer options is random for each question.
+         * @param {Array} array - The array to shuffle.
+         * @returns {Array} The shuffled array.
+         */
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        /**
+         * Renders the current question to the DOM.
+         * Handles the transition to the results screen if the quiz is complete.
+         */
+        function renderQuiz() {
+            // Step 1: Reset UI visibility
+            resultsContainer.classList.add('hidden');
+            rationaleContainer.classList.add('hidden');
+            nextBtn.disabled = true;
+
+            // Step 2: Check for quiz completion
+            if (currentQuestionIndex >= quizData.length) {
+                showResults();
+                return;
+            }
+
+            const currentQuestion = quizData[currentQuestionIndex];
+            answered = false; // Reset answered flag for the new question
+
+            // Step 3: Prepare and shuffle answers
+            shuffledAnswers = shuffleArray([...currentQuestion.answerOptions]);
+
+            // Step 4: Construct the question HTML (using template literals for clean injection)
+            questionContainer.innerHTML = `
+                <div class="text-lg font-semibold text-gray-700 mb-2">
+                    Question ${currentQuestionIndex + 1} of ${quizData.length}
+                </div>
+                <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6">
+                    ${currentQuestion.question}
+                </h2>
+                <div id="answer-options" class="space-y-3">
+                    ${shuffledAnswers.map((option, index) => `
+                        <button
+                            class="answer-btn w-full text-left p-3 border-2 border-gray-200 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-150"
+                            data-correct="${option.isCorrect}"
+                            data-index="${index}"
+                            onclick="checkAnswer(${index})"
+                        >
+                            <span class="font-medium">${String.fromCharCode(65 + index)}.</span> ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+
+            // Step 5: Update the 'Next' button text for the last question
+            nextBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? 'View Results' : 'Next Question';
+        }
+
+        /**
+         * Processes the user's selected answer, updates the score, and provides visual feedback.
+         * @param {number} selectedIndex - The index of the selected answer in the shuffledAnswers array.
+         */
+        function checkAnswer(selectedIndex) {
+            // Guard clause: do nothing if the question has already been answered
+            if (answered) return;
+
+            answered = true;
+            nextBtn.disabled = false;
+            const currentQuestion = quizData[currentQuestionIndex];
+            const selectedOption = shuffledAnswers[selectedIndex];
+
+            const buttons = document.querySelectorAll('.answer-btn');
+
+            // Iterate over all buttons to apply styling
+            buttons.forEach((button, index) => {
+                const optionIsCorrect = shuffledAnswers[index].isCorrect;
+                const buttonElement = button;
+
+                // Disable all buttons to lock the answer
+                buttonElement.disabled = true;
+
+                // Highlight the correct answer in green
+                if (optionIsCorrect) {
+                    buttonElement.classList.add('correct');
+                }
+                // Highlight the user's incorrect choice in red
+                else if (index === selectedIndex) {
+                    buttonElement.classList.add('incorrect');
+                }
+            });
+
+            // Update score and set rationale text/color
+            if (selectedOption.isCorrect) {
+                score++;
+                // Rationale styling for correct answer
+                rationaleContainer.classList.remove('bg-red-100', 'border-red-500');
+                rationaleContainer.classList.add('bg-green-100', 'border-green-500');
+                rationaleText.innerHTML = `<span class="font-bold text-green-700">Correct!</span> ${currentQuestion.rationale}`;
+            } else {
+                // Rationale styling for incorrect answer
+                rationaleContainer.classList.remove('bg-green-100', 'border-green-500');
+                rationaleContainer.classList.add('bg-red-100', 'border-red-500');
+                rationaleText.innerHTML = `<span class="font-bold text-red-700">Incorrect.</span> ${currentQuestion.rationale}`;
+            }
+
+            // Show the rationale block
+            rationaleContainer.classList.remove('hidden');
+        }
+
+        // --- EVENT LISTENERS ---
+        // Listener for the 'Next Question' / 'View Results' button
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            renderQuiz();
+        });
+
+        /**
+         * Displays the final score and hides the quiz elements.
+         */
+        function showResults() {
+            // Hide quiz components
+            questionContainer.classList.add('hidden');
+            rationaleContainer.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+
+            // Show results component
+            resultsContainer.classList.remove('hidden');
+
+            const percentage = ((score / quizData.length) * 100).toFixed(1);
+            let message = '';
+            let color = 'text-red-600';
+
+            // Determine feedback message based on score
+            if (percentage >= 90) {
+                message = 'Excellent job! You demonstrated strong knowledge.';
+                color = 'text-green-600';
+            } else if (percentage >= 70) {
+                message = 'Great effort! You passed, but review the material for full mastery.';
+                color = 'text-yellow-600';
+            } else {
+                message = 'Time to review Chapter 1. Keep practicing!';
+            }
+
+            // Display the final score and message
+            finalScore.innerHTML = `Your score: <span class="${color} font-extrabold">${score} / ${quizData.length}</span> (${percentage}%)<br><span class="text-lg text-gray-600">${message}</span>`;
+        }
+
+        /**
+         * Resets the quiz state to start over. Called on page load and restart.
+         */
+        function initializeQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            answered = false;
+
+            // Ensure all primary containers are visible or hidden correctly for the start screen
+            questionContainer.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            rationaleContainer.classList.add('hidden');
+
+            // Render the first question
+            renderQuiz();
+        }
+
+        // Start the quiz when the page and all resources are loaded
+        window.onload = initializeQuiz;
+
+    </script>
+</body>
+</html>
