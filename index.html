@@ -43,6 +43,11 @@
         </h1>
         <p class="text-center text-sm text-gray-500 mb-8">Test your knowledge on permits, GDL, and licensing requirements.</p>
 
+        <!-- SCORE TRACKER - New Feature -->
+        <div id="score-tracker" class="bg-blue-500 text-white p-3 rounded-lg text-center font-bold mb-6 shadow-md hidden">
+            <!-- Content updated dynamically by JS -->
+        </div>
+
         <!-- Container where questions and answer buttons are dynamically loaded -->
         <div id="question-container">
             <!-- JavaScript renders question title and buttons here -->
@@ -64,8 +69,14 @@
         <div id="results-container" class="hidden text-center">
             <h2 class="text-4xl font-bold text-gray-800 mb-4">Quiz Complete!</h2>
             <p id="final-score" class="text-2xl font-semibold mb-6"></p>
-            <!-- Restart button uses the initializeQuiz function to reset state -->
-            <button id="restart-btn" onclick="initializeQuiz()" class="px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150">
+
+            <!-- Section for missed questions - New Feature -->
+            <div id="review-section" class="text-left mt-8 p-4 bg-gray-100 rounded-lg hidden">
+                <h3 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Questions to Review:</h3>
+                <!-- Missed questions will be injected here -->
+            </div>
+            
+            <button id="restart-btn" onclick="initializeQuiz()" class="mt-8 px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 transition duration-150">
                 Restart Quiz
             </button>
         </div>
@@ -74,8 +85,6 @@
     <!-- --- JAVASCRIPT LOGIC --- -->
     <script>
         // --- QUIZ DATA (20 QUESTIONS) ---
-        // Array of question objects. Each object contains the question text, a list of
-        // answer options (one of which is marked as correct), and a rationale.
         const quizData = [
             // Question 1
             {
@@ -101,7 +110,7 @@
                 ],
                 "rationale": "The licensed driver accompanying a permit holder must be 21 or older and have held a license for at least one year."
             },
-            // ... (Remaining questions follow the same structure)
+            // Question 3
             {
                 "questionNumber": 3,
                 "question": "During the Initial Licensing Phase (ages 16-17), for the first 12 months, how many unrelated passengers under the age of 19 are permitted in the vehicle?",
@@ -113,6 +122,7 @@
                 ],
                 "rationale": "During the first 12 months, only one unrelated passenger under 19 is allowed in the vehicle, unless traveling to or from work or an organized event."
             },
+            // Question 4
             {
                 "questionNumber": 4,
                 "question": "What is the primary document that proves ownership of a vehicle?",
@@ -124,6 +134,7 @@
                 ],
                 "rationale": "The **Certificate of Title** is the legal document issued by the Secretary of State that proves legal ownership of the vehicle."
             },
+            // Question 5
             {
                 "questionNumber": 5,
                 "question": "Which of the following tests is *not* required to obtain an Illinois driver's license?",
@@ -135,6 +146,7 @@
                 ],
                 "rationale": "A specific **Hearing Test** is generally not required for a non-CDL driver's license."
             },
+            // Question 6
             {
                 "questionNumber": 6,
                 "question": "Under the GDL Initial Licensing Phase, what are the driving curfew hours on Friday and Saturday nights?",
@@ -146,6 +158,7 @@
                 ],
                 "rationale": "On weekend nights, the curfew is **11 p.m. to 6 a.m.**"
             },
+            // Question 7
             {
                 "questionNumber": 7,
                 "question": "What is the consequence for a first conviction of a serious GDL violation (e.g., street racing or illegal consumption of alcohol)?",
@@ -157,6 +170,7 @@
                 ],
                 "rationale": "Serious offenses result in a mandatory **suspension or revocation** of the license, as these are zero-tolerance violations."
             },
+            // Question 8
             {
                 "questionNumber": 8,
                 "question": "A newly licensed driver (age 16) who receives an Initial Licensing Phase violation will have their 9-month waiting period for the Full License Phase extended by what duration?",
@@ -168,6 +182,7 @@
                 ],
                 "rationale": "The 9-month waiting period is extended by **6 months** for any moving violation conviction during the Initial Licensing Phase."
             },
+            // Question 9
             {
                 "questionNumber": 9,
                 "question": "For a person over the age of 18 applying for their first driver's license, which GDL phase are they NOT subject to?",
@@ -179,6 +194,7 @@
                 ],
                 "rationale": "The **Initial Licensing Phase** (with passenger and curfew restrictions) only applies to drivers aged 16 and 17."
             },
+            // Question 10
             {
                 "questionNumber": 10,
                 "question": "Which of the following is an acceptable document to prove residency when applying for an Illinois driver's license?",
@@ -190,6 +206,7 @@
                 ],
                 "rationale": "A valid **bank statement dated within the last 90 days** is one of the acceptable official documents for residency proof."
             },
+            // Question 11
             {
                 "questionNumber": 11,
                 "question": "How many hours of supervised driving, including at least 10 hours at night, are required for a 15-year-old permit holder to qualify for the Initial Licensing Phase?",
@@ -201,6 +218,7 @@
                 ],
                 "rationale": "The state requires a minimum of **50 hours** of supervised driving, with at least 10 of those hours being driven at night."
             },
+            // Question 12
             {
                 "questionNumber": 12,
                 "question": "How many days does an Illinois driver have to notify the Secretary of State's office of a change of address?",
@@ -212,6 +230,7 @@
                 ],
                 "rationale": "Illinois law requires the driver to notify the Secretary of State's office of an address change within **10 days**."
             },
+            // Question 13
             {
                 "questionNumber": 13,
                 "question": "What is the most common classification of a non-commercial driver's license that allows the holder to operate cars and light trucks?",
@@ -223,6 +242,7 @@
                 ],
                 "rationale": "**Class D** is the standard driver's license classification for operating passenger cars, vans, and light trucks up to 16,000 lbs."
             },
+            // Question 14
             {
                 "questionNumber": 14,
                 "question": "Although a 16 or 17-year-old can indicate their wish to be an organ donor, what is the minimum age to give legal consent to be an organ and tissue donor in Illinois?",
@@ -234,6 +254,7 @@
                 ],
                 "rationale": "Age **18** is the age of legal majority in Illinois, at which point an individual can legally consent to organ and tissue donation."
             },
+            // Question 15
             {
                 "questionNumber": 15,
                 "question": "For an Illinois resident between the ages of 21 and 80, what is the typical validity period before they must renew their standard driver's license?",
@@ -245,6 +266,7 @@
                 ],
                 "rationale": "The standard renewal cycle for most adult drivers in this age range is every **four years**."
             },
+            // Question 16
             {
                 "questionNumber": 16,
                 "question": "When must a driver report a medical condition that could impair driving ability to the Secretary of State?",
@@ -256,6 +278,7 @@
                 ],
                 "rationale": "The law requires reporting when a condition could reasonably interfere with the **safe operation of a motor vehicle**."
             },
+            // Question 17
             {
                 "questionNumber": 17,
                 "question": "A 15-year-old applying for an Instruction Permit must be currently enrolled in or have successfully completed what course?",
@@ -267,6 +290,7 @@
                 ],
                 "rationale": "State law requires a 15-year-old applicant to be enrolled in or have completed a state-approved **Driver Education Course**."
             },
+            // Question 18
             {
                 "questionNumber": 18,
                 "question": "Which of the following documents is MANDATORY to present to the Secretary of State's facility before a vehicle may be driven, regardless of the license application process?",
@@ -278,6 +302,7 @@
                 ],
                 "rationale": "Current **Proof of Liability Insurance** is mandatory for the operation of any vehicle on Illinois roadways and must be presented for the road test."
             },
+            // Question 19
             {
                 "questionNumber": 19,
                 "question": "If a permit holder (regardless of age) fails the driving exam, how long must they wait before attempting the road test again?",
@@ -289,6 +314,7 @@
                 ],
                 "rationale": "The minimum required waiting period after failing the driving portion of the license exam is **7 days**."
             },
+            // Question 20
             {
                 "questionNumber": 20,
                 "question": "What are the nighttime curfew hours for a driver in the Initial Licensing Phase (under 18) from Sunday through Thursday?",
@@ -307,18 +333,21 @@
         let score = 0;                 // Tracks the number of correct answers
         let answered = false;          // Flag to prevent the user from clicking multiple answers
         let shuffledAnswers = [];      // Stores the randomized order of answers for the currently displayed question
+        let incorrectlyAnsweredQuestions = []; // Stores the indices of questions answered incorrectly
 
         // --- DOM ELEMENT REFERENCES ---
+        const scoreTracker = document.getElementById('score-tracker');
         const questionContainer = document.getElementById('question-container');
         const rationaleContainer = document.getElementById('rationale-container');
         const rationaleText = document.getElementById('rationale-text');
         const nextBtn = document.getElementById('next-btn');
         const resultsContainer = document.getElementById('results-container');
         const finalScore = document.getElementById('final-score');
+        const reviewSection = document.getElementById('review-section');
+
 
         /**
-         * Shuffles an array using the modern Fisher-Yates (Knuth) shuffle algorithm.
-         * Ensures that the order of answer options is random for each question.
+         * Shuffles an array using the Fisher-Yates shuffle algorithm.
          * @param {Array} array - The array to shuffle.
          * @returns {Array} The shuffled array.
          */
@@ -331,30 +360,42 @@
         }
 
         /**
+         * Updates the score tracker display at the top of the quiz.
+         */
+        function updateScoreTracker() {
+             scoreTracker.innerHTML = `
+                Score: ${score} / ${quizData.length} &nbsp;|&nbsp; Question ${currentQuestionIndex + 1} of ${quizData.length}
+            `;
+        }
+
+        /**
          * Renders the current question to the DOM.
-         * Handles the transition to the results screen if the quiz is complete.
          */
         function renderQuiz() {
-            // Step 1: Reset UI visibility
+            // Hide results and rationale containers
             resultsContainer.classList.add('hidden');
             rationaleContainer.classList.add('hidden');
             nextBtn.disabled = true;
 
-            // Step 2: Check for quiz completion
+            // Check for quiz completion
             if (currentQuestionIndex >= quizData.length) {
                 showResults();
                 return;
             }
 
+            // Show the score tracker for active quizzing
+            scoreTracker.classList.remove('hidden');
+            updateScoreTracker();
+
             const currentQuestion = quizData[currentQuestionIndex];
             answered = false; // Reset answered flag for the new question
 
-            // Step 3: Prepare and shuffle answers
+            // Prepare and shuffle answers
             shuffledAnswers = shuffleArray([...currentQuestion.answerOptions]);
 
-            // Step 4: Construct the question HTML (using template literals for clean injection)
+            // Construct the question HTML
             questionContainer.innerHTML = `
-                <div class="text-lg font-semibold text-gray-700 mb-2">
+                <div class="text-lg font-semibold text-gray-700 mb-2 hidden">
                     Question ${currentQuestionIndex + 1} of ${quizData.length}
                 </div>
                 <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-6">
@@ -374,7 +415,7 @@
                 </div>
             `;
 
-            // Step 5: Update the 'Next' button text for the last question
+            // Update the 'Next' button text for the last question
             nextBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? 'View Results' : 'Next Question';
         }
 
@@ -383,8 +424,7 @@
          * @param {number} selectedIndex - The index of the selected answer in the shuffledAnswers array.
          */
         function checkAnswer(selectedIndex) {
-            // Guard clause: do nothing if the question has already been answered
-            if (answered) return;
+            if (answered) return; // Prevent double clicking
 
             answered = true;
             nextBtn.disabled = false;
@@ -393,43 +433,40 @@
 
             const buttons = document.querySelectorAll('.answer-btn');
 
-            // Iterate over all buttons to apply styling
+            let isCorrect = selectedOption.isCorrect;
+
             buttons.forEach((button, index) => {
                 const optionIsCorrect = shuffledAnswers[index].isCorrect;
-                const buttonElement = button;
+                button.disabled = true; // Disable all buttons
 
-                // Disable all buttons to lock the answer
-                buttonElement.disabled = true;
-
-                // Highlight the correct answer in green
                 if (optionIsCorrect) {
-                    buttonElement.classList.add('correct');
-                }
-                // Highlight the user's incorrect choice in red
-                else if (index === selectedIndex) {
-                    buttonElement.classList.add('incorrect');
+                    button.classList.add('correct');
+                } else if (index === selectedIndex) {
+                    button.classList.add('incorrect');
                 }
             });
 
-            // Update score and set rationale text/color
-            if (selectedOption.isCorrect) {
+            // Update score and track incorrect answers
+            if (isCorrect) {
                 score++;
-                // Rationale styling for correct answer
                 rationaleContainer.classList.remove('bg-red-100', 'border-red-500');
                 rationaleContainer.classList.add('bg-green-100', 'border-green-500');
                 rationaleText.innerHTML = `<span class="font-bold text-green-700">Correct!</span> ${currentQuestion.rationale}`;
             } else {
-                // Rationale styling for incorrect answer
+                // If incorrect, add the index to the review list
+                incorrectlyAnsweredQuestions.push(currentQuestionIndex);
                 rationaleContainer.classList.remove('bg-green-100', 'border-green-500');
                 rationaleContainer.classList.add('bg-red-100', 'border-red-500');
                 rationaleText.innerHTML = `<span class="font-bold text-red-700">Incorrect.</span> ${currentQuestion.rationale}`;
             }
 
+            // Update the score tracker immediately after scoring
+            updateScoreTracker();
+
             // Show the rationale block
             rationaleContainer.classList.remove('hidden');
         }
 
-        // --- EVENT LISTENERS ---
         // Listener for the 'Next Question' / 'View Results' button
         nextBtn.addEventListener('click', () => {
             currentQuestionIndex++;
@@ -437,13 +474,14 @@
         });
 
         /**
-         * Displays the final score and hides the quiz elements.
+         * Displays the final score and the list of missed questions.
          */
         function showResults() {
             // Hide quiz components
             questionContainer.classList.add('hidden');
             rationaleContainer.classList.add('hidden');
             nextBtn.classList.add('hidden');
+            scoreTracker.classList.add('hidden'); // Hide score tracker on results screen
 
             // Show results component
             resultsContainer.classList.remove('hidden');
@@ -452,7 +490,6 @@
             let message = '';
             let color = 'text-red-600';
 
-            // Determine feedback message based on score
             if (percentage >= 90) {
                 message = 'Excellent job! You demonstrated strong knowledge.';
                 color = 'text-green-600';
@@ -465,7 +502,46 @@
 
             // Display the final score and message
             finalScore.innerHTML = `Your score: <span class="${color} font-extrabold">${score} / ${quizData.length}</span> (${percentage}%)<br><span class="text-lg text-gray-600">${message}</span>`;
+            
+            // Generate the review section content
+            renderReviewSection();
         }
+
+        /**
+         * Generates and displays the list of questions the user missed.
+         */
+        function renderReviewSection() {
+            if (incorrectlyAnsweredQuestions.length > 0) {
+                let reviewHTML = '<ul class="space-y-4">';
+                
+                // Use Set to ensure each missed question index is unique
+                const uniqueMissedIndices = [...new Set(incorrectlyAnsweredQuestions)];
+
+                uniqueMissedIndices.forEach(index => {
+                    const missedQuestion = quizData[index];
+                    
+                    // Find the text of the correct answer
+                    const correctAnswer = missedQuestion.answerOptions.find(option => option.isCorrect);
+
+                    reviewHTML += `
+                        <li class="p-3 bg-white rounded-lg border-l-4 border-red-400 shadow-sm">
+                            <p class="font-semibold text-gray-800">Q${missedQuestion.questionNumber}: ${missedQuestion.question}</p>
+                            <p class="mt-1 text-sm text-green-600 font-bold">Correct Answer: ${correctAnswer.text}</p>
+                            <p class="text-xs text-gray-500 mt-1">${missedQuestion.rationale}</p>
+                        </li>
+                    `;
+                });
+
+                reviewHTML += '</ul>';
+                reviewSection.innerHTML = `<h3 class="text-xl font-bold text-gray-700 mb-4 border-b pb-2">Questions to Review (${uniqueMissedIndices.length} Missed):</h3>${reviewHTML}`;
+                reviewSection.classList.remove('hidden');
+            } else {
+                // If the user got 100%
+                reviewSection.innerHTML = '<p class="text-lg font-medium text-green-700 p-4">🎉 You answered every question correctly! No review needed.</p>';
+                reviewSection.classList.remove('hidden');
+            }
+        }
+
 
         /**
          * Resets the quiz state to start over. Called on page load and restart.
@@ -474,12 +550,14 @@
             currentQuestionIndex = 0;
             score = 0;
             answered = false;
+            incorrectlyAnsweredQuestions = []; // Reset the list of missed questions
 
             // Ensure all primary containers are visible or hidden correctly for the start screen
             questionContainer.classList.remove('hidden');
             nextBtn.classList.remove('hidden');
             resultsContainer.classList.add('hidden');
             rationaleContainer.classList.add('hidden');
+            reviewSection.classList.add('hidden'); // Hide review section on restart
 
             // Render the first question
             renderQuiz();
